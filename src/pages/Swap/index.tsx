@@ -5,7 +5,7 @@ import { formatEther } from '@ethersproject/units';
 import { injected } from '../../connectors';
 import { notification, Spin, Button } from 'antd';
 import { getErrorMessage } from '../../components/Web3ReactManager';
-import { utils } from 'ethers';
+import { ethers, utils } from 'ethers';
 
 enum ConnectorNames {
   Injected = 'Injected',
@@ -32,20 +32,22 @@ function ChainId() {
 function GasPrice() {
   const { library } = useWeb3React<Web3Provider>();
 
-  const [price, setPrice] = React.useState<string | number>('loading');
+  const [price, setPrice] = React.useState<string | number>('');
 
   const getPirce = async () => {
     if (library) {
       const price = await library.getGasPrice();
       console.log(price);
+      setPrice(utils.formatEther(price));
+      console.log(utils.parseEther(utils.formatEther(price)));
     }
   };
 
   return (
-    <>
+    <div>
       <span>price:{price}</span>
       <Button onClick={getPirce}>get Price</Button>
-    </>
+    </div>
   );
 }
 
@@ -186,8 +188,26 @@ function Header() {
         <BlockNumber />
         <Account />
         <Balance />
+        <CallContract />
       </h3>
     </>
+  );
+}
+
+function CallContract() {
+  const { library } = useWeb3React<Web3Provider>();
+
+  // const  contract = new ethers.Contract()
+
+  const [price, setPrice] = React.useState<string | number>('');
+
+  const getPirce = async () => {};
+
+  return (
+    <div>
+      <span>{price}</span>
+      <Button onClick={getPirce}>call contract</Button>
+    </div>
   );
 }
 
