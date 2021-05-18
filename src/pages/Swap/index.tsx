@@ -3,9 +3,9 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { formatEther } from '@ethersproject/units';
 import { injected } from '../../connectors';
-import { notification, Spin, Button } from 'antd';
-import { getErrorMessage } from '../../components/Web3ReactManager';
-import { ethers, utils } from 'ethers';
+import { Button } from 'antd';
+import { utils } from 'ethers';
+import './index.less';
 
 enum ConnectorNames {
   Injected = 'Injected',
@@ -19,13 +19,13 @@ function ChainId() {
   const { chainId } = useWeb3React();
 
   return (
-    <>
+    <div>
       <span>Chain Id</span>
       <span role="img" aria-label="chain">
         ⛓
       </span>
       <span>{chainId ? chainId : ''}</span>
-    </>
+    </div>
   );
 }
 
@@ -37,9 +37,7 @@ function GasPrice() {
   const getPirce = async () => {
     if (library) {
       const price = await library.getGasPrice();
-      console.log(price);
       setPrice(utils.formatEther(price));
-      console.log(utils.parseEther(utils.formatEther(price)));
     }
   };
 
@@ -86,7 +84,7 @@ function BlockNumber() {
   }, [library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   return (
-    <>
+    <div>
       <span>Block Number</span>
       <span role="img" aria-label="numbers">
         🔢
@@ -94,7 +92,7 @@ function BlockNumber() {
       <span>
         {blockNumber === null ? 'Error' : blockNumber ? blockNumber : ''}
       </span>
-    </>
+    </div>
   );
 }
 
@@ -102,7 +100,7 @@ function Account() {
   const { account } = useWeb3React();
 
   return (
-    <>
+    <div>
       <span>Account</span>
       <span role="img" aria-label="robot">
         🤖
@@ -116,7 +114,7 @@ function Account() {
             )}`
           : ''}
       </span>
-    </>
+    </div>
   );
 }
 
@@ -149,7 +147,7 @@ function Balance() {
   }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   return (
-    <>
+    <div>
       <span>Balance</span>
       <span role="img" aria-label="gold">
         💰
@@ -161,36 +159,18 @@ function Balance() {
           ? `Ξ${formatEther(balance as any)}`
           : ''}
       </span>
-    </>
+    </div>
   );
 }
 
-function Header() {
-  const { active, error } = useWeb3React();
-
+function Info() {
   return (
-    <>
-      <h1 style={{ margin: '1rem', textAlign: 'right' }}>
-        {active ? '🟢' : error ? '🔴' : '🟠'}
-      </h1>
-      <h3
-        style={{
-          display: 'grid',
-          gridGap: '1rem',
-          gridTemplateColumns: '1fr min-content 1fr',
-          maxWidth: '20rem',
-          lineHeight: '2rem',
-          margin: 'auto',
-        }}
-      >
-        <GasPrice />
-        <ChainId />
-        <BlockNumber />
-        <Account />
-        <Balance />
-        <CallContract />
-      </h3>
-    </>
+    <div className="info-container">
+      <ChainId />
+      <BlockNumber />
+      <Account />
+      <Balance />
+    </div>
   );
 }
 
@@ -211,158 +191,7 @@ function CallContract() {
   );
 }
 
-function Test() {
-  const context = useWeb3React<Web3Provider>();
-  const {
-    connector,
-    library,
-    chainId,
-    account,
-    activate,
-    deactivate,
-    active,
-    error,
-  } = context;
-
-  // handle logic to recognize the connector currently being activated
-  const [activatingConnector, setActivatingConnector] = React.useState<any>();
-  React.useEffect(() => {
-    if (activatingConnector && activatingConnector === connector) {
-      setActivatingConnector(undefined);
-    }
-  }, [activatingConnector, connector]);
-
-  // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-
-  React.useEffect(() => {
-    if (error) {
-      const args = {
-        message: '错误提示',
-        description: getErrorMessage(error as any),
-        duration: 0,
-      };
-      notification.open(args);
-    }
-  }, [error]);
-
-  return (
-    <>
-      <Header />
-      <hr style={{ margin: '2rem' }} />
-      <div
-        style={{
-          display: 'grid',
-          gridGap: '1rem',
-          gridTemplateColumns: '1fr 1fr',
-          maxWidth: '20rem',
-          margin: 'auto',
-        }}
-      >
-        {Object.keys(connectorsByName).map((name) => {
-          const currentConnector = connectorsByName['Injected'];
-          const activating = currentConnector === activatingConnector;
-          const connected = currentConnector === connector;
-          const disabled = !!activatingConnector || connected || !!error;
-          return (
-            <Button
-              type="primary"
-              disabled={disabled}
-              key={name}
-              onClick={() => {
-                setActivatingConnector(currentConnector);
-                activate(connectorsByName[name]);
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '0',
-                  left: '0',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: 'black',
-                  margin: '0 0 0 1rem',
-                }}
-              >
-                {activating && <Spin tip="loading"></Spin>}
-                {connected && (
-                  <span role="img" aria-label="check">
-                    ✅
-                  </span>
-                )}
-              </div>
-              {name}
-            </Button>
-          );
-        })}
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        {(active || error) && (
-          <Button
-            onClick={() => {
-              deactivate();
-            }}
-          >
-            Deactivate
-          </Button>
-        )}
-
-        {!!error && (
-          <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>
-            {getErrorMessage(error)}
-          </h4>
-        )}
-      </div>
-
-      <hr style={{ margin: '2rem' }} />
-
-      <div
-        style={{
-          display: 'grid',
-          gridGap: '1rem',
-          gridTemplateColumns: 'fit-content',
-          maxWidth: '20rem',
-          margin: 'auto',
-        }}
-      >
-        {!!(library && account) && (
-          <button
-            style={{
-              height: '3rem',
-              borderRadius: '1rem',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              library
-                .getSigner(account)
-                .signMessage('👋')
-                .then((signature: any) => {
-                  window.alert(`Success!\n\n${signature}`);
-                })
-                .catch((error: any) => {
-                  window.alert(
-                    'Failure!' +
-                      (error && error.message ? `\n\n${error.message}` : ''),
-                  );
-                });
-            }}
-          >
-            Sign Message
-          </button>
-        )}
-      </div>
-    </>
-  );
-}
-
 const SwapPage = () => {
-  return <Test />;
+  return <Info />;
 };
 export default SwapPage;

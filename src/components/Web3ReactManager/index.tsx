@@ -88,7 +88,7 @@ export default function Web3ReactManager(props: any) {
 
   // if the account context isn't active, and there's an error on the network context, it's an irrecoverable error
   if (!active && networkError) {
-    return <span>laoding</span>;
+    return <span>请选择正确的网络...</span>;
   }
 
   // if neither context is active, spin
